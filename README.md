@@ -22,6 +22,6 @@ yarn run dev
 ### Deployment
 
 ```bash
-wrangler secret put GITHUB_CLIENT_SECRET --env production
+wrangler secret put GITHUB_CLIENT_SECRET
 wrangler deploy
 ```
