@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { setCookie } from "hono/cookie";
+import { getCookie, setCookie } from "hono/cookie";
 import { zValidator } from "@hono/zod-validator";
 import { v4 as uuidv4 } from "uuid";
 import z from "zod";
@@ -18,6 +18,7 @@ const auth = new Hono<{ Bindings: Bindings }>();
 
 const paramSchema = z.object({
   code: z.string(),
+  state: z.string(),
 });
 
 auth.get(
@@ -29,6 +30,13 @@ auth.get(
   }),
   async (c) => {
     const param = c.req.valid("query");
+
+    // CSRF measure
+    const state = getCookie(c, "state")!;
+    if (state === undefined || state !== param.state) {
+      return c.text("Invalid state.", 400);
+    }
+
     try {
       // get an access token
       const accessTokenResponse = await fetch(GITHUB_ACCESS_TOKEN_URL, {

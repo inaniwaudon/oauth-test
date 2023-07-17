@@ -1,13 +1,21 @@
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
+import * as uuid from "uuid";
 import callback from "./callback";
 import { Bindings } from "./bindings";
 
 const app = new Hono<{ Bindings: Bindings }>();
 
 app.get("/signin", async (c) => {
+  const state = uuid.v4();
+  setCookie(c, "state", state, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    path: "/",
+  });
   return c.redirect(
-    `https://github.com/login/oauth/authorize?client_id=${c.env.GITHUB_CLIENT_ID}`,
+    `https://github.com/login/oauth/authorize?client_id=${c.env.GITHUB_CLIENT_ID}&state=${state}`,
     302
   );
 });
